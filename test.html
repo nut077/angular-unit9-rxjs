@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="rxjs.js"></script>
+</head>
+<body>
+<script>
+  const stream$ = Rx.Observable.create(observer => {
+    setInterval(() => observer.next('Freedom'), 1000);
+    //setTimeout(() => observer.complete(), 3000);
+  });
+  const subscription = stream$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete')
+  );
+  setTimeout(() => subscription.unsubscribe(), 1000);
+
+  const stream2$ = Rx.Observable.of(1, 2, 3, 4); // [1, 2, 3, 4]
+  const stream2double$ = stream2$.map(item => item * 2); //[2 , 4, 6, 8]
+  const stream2filter$ = stream2$.filter(item => item % 2 === 0); //[2, 4]
+  const stream2scan$ = stream2$.scan((result, item) => result + item, 0); //[1, 3, 6, 10]; // 0 = default result
+  const stream2take$ = stream2$.take(2); // [1, 2] เอา 2 ค่าแรก
+  const stream2first$ = stream2$.first(); // [1]
+  const stream2skip$ = stream2$.skip(2); // [3, 4] ไม่เอา 2 ค่าแรก
+  const stream2takelast$ = stream2$.takeLast(2); // [3, 4] เอา 2 ค่าสุดท้าย
+  const stream2last$ = stream2$.last(); // [4]
+  stream2last$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete2')
+  );
+
+  const stream3$ = Rx.Observable.from([5, 6, 7]); // [5, 6, 7]
+  stream3$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete3')
+  );
+
+  const stream4$ = Rx.Observable.from(fetch('https://www.babelcoder.com/api/v1/articles')); // โหลดข้อมูลจาก api server
+  stream4$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete4')
+  );
+
+  const stream5$ = Rx.Observable.fromEvent(document, 'click'); // เมื่อเกิดการ click ขึ้น
+  stream5$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete5')
+  );
+
+  const stream6$ = Rx.Observable.interval(50000); // [0, 1, 2, 3, 4....] ตามจำนวนเวลาที่ระบุไว้
+  stream6$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete6')
+  );
+
+  const stream7$ = Rx.Observable.timer(2000, 50000); // เริ่มทำตั้งแต่เมื่อไร  และเมื่อทำแล้วให้ทำทุกกี่วินาที
+  stream7$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete7')
+  );
+
+  const stream81$ = Rx.Observable.interval(100).take(6);
+  const stream82$ = Rx.Observable.interval(200).take(6);
+  const stream8output$ = stream81$.zip(stream82$, (x, y) => x + y); // [0, 2, 4, 6, 8] ค่าค่าของลำดับที่ตรงกันของทั้ง 2 stream
+  const stream8concat$ = stream81$.concat(stream82$); // เอาทั้ง 2 stream มาต่อกัน [0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5]
+  const stream8startWith$ = stream81$.startWith('A'); // เอา A มา// วางไว้หน้า stream1 [A, 0, 1, 2, 3, 4, 5]
+  // ---0--1--2--3--4--5
+  // ------0-----1-----2-----3-----4-----5
+  const stream8merge$ = stream81$.merge(stream82$); // [0, 1, 0, 2, 3, 1, 4, 5, 2, 3, 4, 5]
+  const stream8combineLatest$ = stream81$.combineLatest(stream82$, (x, y) => `${x},${y}`);
+  // ค่าสุดท้ายของแต่ละ stream ในช่วงเวลานั้น
+  // [0,0] [1,0] [2,0] [3,1] [4,1] [5,2] [5,3] [5,4] [5,5]
+  const stream8withLatestFrom$ = stream81$.withLatestFrom(
+    stream82$, (x, y) => y % 2 === 0 ? x : x + 'A'
+  );
+  // ค่าสุดท้ายของ stream1 เทียบกับค่าสุดท้ายของ stream2 ถ้าค่าของ stream2 เป็นเลขคู่ก็จะแสดงตัวเลข แต่ถ้าไม่ใช่จะแสดงเป็น ตัวเลขบวกด้วยค่า A
+  // [1, 2, 3A, 4A, 5]
+
+  stream8withLatestFrom$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete8')
+  );
+
+  const stream9higherOrder = Rx.Observable.interval(100).take(5);
+  const outputStream9higherOrder = stream9higherOrder.map(() => Rx.Observable.of('X', 'Y'));
+  outputStream9higherOrder.subscribe({
+    next(value) {
+      value.subscribe(
+        (value) => console.log(value)
+      )
+    },
+    error(error) {console.log(error)},
+    complete() {console.log('Complete9')}
+  });
+  const outputMergeAll$ = outputStream9higherOrder.mergeAll(); // concatAll() === mergeAll(1)
+  outputMergeAll$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete10')
+  )
+
+</script>
+</body>
+</html>

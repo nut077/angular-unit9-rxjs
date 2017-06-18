@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="rxjs.js"></script>
+</head>
+<body>
+  <script>
+    //1.	จงสร้าง stream ที่ทุกๆหนึ่งวินาทีจะปล่อยตัวอักษรทีละตัวของคำว่า babelcoder
+    const txt = 'babelcoder';
+    /*
+    // วิธีที่เราคิด
+    const txt = 'babelcoder';
+    const stream$ = Rx.Observable.timer(0, 1000).take(txt.length);
+    stream$.subscribe(
+      (value) => console.log(txt.substring(value, value + 1)),
+      (error) => console.log(error),
+      () => console.log('Complete')
+    );*/
+
+    // เฉลย
+    const output$ = Rx.Observable.zip(
+      Rx.Observable.from(txt.split('')),
+      Rx.Observable.interval(1000).take(txt.length),
+      (val1, val2) => `${val1}, ${val2}`
+    ); // val1 คือค่าของ stream ตัวแรก , val2 คือค่าของ stream ตัวที่สอง
+    output$.subscribe(
+      (value) => console.log(value),
+      (error) => console.log(error),
+      () => console.log('Complete')
+    )
+  </script>
+</body>
+</html>
