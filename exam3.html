@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="rxjs.js"></script>
+</head>
+<body>
+  <label for="base">Base: </label><input type="text" id="base" name="base"/><br/>
+  <label for="height">Height: </label><input type="text" id="height" name="height"/>
+  <div id="area"></div>
+<script>
+  //3.	จงสร้าง HTML input element จำนวน 2 ช่อง ช่องแรกแทนความยาวฐานของสามเหลี่ยม ช่องหลังแทนส่วนสูงของสามเหลี่ยม
+  // อาศัย operator ใน RxJS จงสร้างการคำนวณพื้นที่สามเหลี่ยม เมื่อค่าของส่วนสูงหรือความยาวฐานเปลี่ยนไป (พื้นที่สามเหลี่ยม = 0.5 x ความยาวฐาน x ส่วนสูง)
+
+  function createStreamFromField(id) {
+    return Rx.Observable
+      .fromEvent(document.getElementById(id), 'keyup')
+      .map(event => event.target.value)
+      .filter(val => !isNaN(val));
+  }
+
+  const output$ = createStreamFromField('base')
+    .combineLatest(createStreamFromField('height'), (base, height) => 0.5 * base * height)
+    .startWith(0);
+
+  output$.subscribe(
+    (value) => document.getElementById('area').innerHTML = value,
+    (error) => document.getElementById('area').innerHTML = error,
+    () => console.log('Complete')
+  );
+
+</script>
+</body>
+</html>

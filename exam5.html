@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="rxjs.js"></script>
+</head>
+<body>
+<input type="text" id="search" placeholder="search"/>
+<ul id="results"></ul>
+<script>
+  //5. จงสร้างช่องค้นหาเพื่อแสดงผลลัพธ์จากการค้นหาที่ระบุตามเงื่อนไขต่อไปนี้
+  /*
+   •	ข้อความค้นหาจะส่งไปค้นหาที่ https://www.babelcoder.com/api/v1/articles/search?query=<QUERY> โดย <QUERY> คือข้อความที่ต้องการใช้ในการค้นหา
+   •	ช่องค้นหาจะไม่ส่งการค้นหาไปยังเซิฟเวอร์ หากเป็นการพิมพ์ต่อเนื่องในระยะเวลา 500 ms
+   •	ช่องค้นหาจะไม่ส่งการค้นหาไปยังเซิฟเวอร์ หากข้อความไม่เปลี่ยนแปลง
+   •	หากการค้นหาสำเร็จ ให้แสดงชื่อบทความ (title) เท่านั้น
+   •	ล้างการแสดงผลเดิมทุกครั้ง เมื่อเริ่มการค้นหาครั้งใหม่
+   */
+  const output$ = Rx.Observable.fromEvent(document.getElementById('search'), 'keyup')
+    .debounceTime(500)
+    .distinctUntilChanged()
+    .map(event => event.target.value)
+    .switchMap(value => fetch(`https://www.babelcoder.com/api/v1/articles/search?query=${value}`));
+  output$.subscribe(
+    (value) => {
+      value.json()
+        .then(json => {
+          const resultElement = document.getElementById('results');
+          resultElement.innerHTML = '';
+
+          json.articles.forEach(article => {
+            const li = document.createElement('li');
+            li.appendChild(document.createTextNode(article.title));
+            resultElement.appendChild(li);
+          });
+        });
+    },
+    (error) => console.log(error),
+    () => console.log('Complete')
+  );
+
+
+</script>
+</body>
+</html>

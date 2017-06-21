@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="rxjs.js"></script>
+</head>
+<body>
+<script>
+  const outputDelay$ = Rx.Observable.interval(500).delay(1000).take(5); // รอ 1 วินาที ก่อนที่จะทำงาน [0, 1, 2, 3, 4]
+
+  // -----0-----1-----2-----3-----4|
+  //      ----------                                ใช่ช่วง 1 วินาที  การปล่อยค่า 0 ในช่วง 1 วินาทีจะมีค่า 1 ออกมาด้วย ทำให้ 0 ไม่ได้รับการพิจารณา 1 ก็เชช่นกัน มี 2 ออกมาด้วย
+  // ทำให้ 1 ไม่ได้รับการพิจารณา คำตอบที่ได้คือ 4 เพราะหลังจาก 4 ไม่มีค่าใดปล่อยออกมาแล้ว  ผลลัพธ์คือ 4
+  // แต่ถ้าเราเปลี่ยนชช่วงเป็น 0.2 วินาที ในช่วงที่ 0 ปบ่อยค่าออกมาในช่วง 0.2 วินาทีไม่มีค่าไหนออกมาด้วย ทำให้ 0 ได้รับการพิจารณา ผลลัพธ์คือ 0 1 2 3 4
+  //const outputDebounceTime$ = Rx.Observable.interval(500).take(5).debounceTime(1000);
+
+  // distinct() ไม่เอาค่าที่ซ้ำกันออกมา  [b, a, e, l, c, o, d, r]
+  /*const outputDistince$ = Rx.Observable.interval(500)
+   .take(9)
+   .zip(Rx.Observable.from('babelcoder'.split('')), (_, v2) => v2)
+   .distinct();*/
+
+  // distinctUntilChanged() เป็นการเปรียบเทียบค่ากับตัวก่อนหน้านี้ ผลลัพธ์คือ h e l o   ค่า l หายไป 1 ตัวเพราะ l ตัวนี้มีค่าเท่ากับ l ตัวก่อนหน้า
+  const outputDistinctUntilChanged$ = Rx.Observable.interval(500)
+    .zip(Rx.Observable.from('hello'.split('')), (_, v2) => v2)
+    .distinctUntilChanged();
+  outputDistinctUntilChanged$.subscribe(
+    (value) => console.log(value),
+    (error) => console.log(error),
+    () => console.log('Complete')
+  );
+
+
+  // Subject เป็นการแชร์ค่ากันของ Observable
+  const stream$subject$ = Rx.Observable.interval(700).take(5);
+  const subject = new Rx.Subject();
+
+  stream$subject$.subscribe(subject);
+
+  const observer1 = {
+    next(value) {
+      console.log(`1 => ${value}`)
+    },
+    error(error) {
+      console.log(error)
+    },
+    complete() {
+      console.log('Complete')
+    }
+  };
+  subject.subscribe(observer1);
+
+  const observer2 = {
+    next(value) {
+      console.log(`2 => ${value}`)
+    },
+    error(error) {
+      console.log(error)
+    },
+    complete() {
+      console.log('Complete2')
+    }
+  };
+  setTimeout(() => subject.subscribe(observer2), 1000);
+  // result
+  // 1 => 0
+  // 1 => 1
+  // 2 => 1
+  // 1 => 2
+  // 2 => 2
+
+
+  const subjectBehavior = new Rx.BehaviorSubject(0);
+  const observerBehavior1 = {
+    next(value) {
+      console.log(`1 behavior => ${value}`)
+    },
+    error(error) {
+      console.log(error)
+    },
+    complete() {
+      console.log('Behavior Completed')
+    }
+  };
+  subjectBehavior.subscribe(observerBehavior1);
+  subjectBehavior.next(1);
+  subjectBehavior.next(2);
+  subjectBehavior.next(3);
+  subjectBehavior.next(4);
+  subjectBehavior.next(5);
+
+  const observerBehavior2 = {
+    next(value) {
+      console.log(`2 behavior => ${value}`)
+    },
+    error(error) {
+      console.log(error)
+    },
+    complete() {
+      console.log('Behavior Completed2')
+    }
+  }
+
+  setTimeout(() => subjectBehavior.subscribe(observerBehavior2), 1000);
+</script>
+</body>
+</html>

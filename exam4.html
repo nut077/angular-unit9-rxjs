@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="rxjs.js"></script>
+</head>
+<body>
+<button type="button" id="counter">Counter</button>
+<div id="result"></div>
+<script>
+  //4.	จงสร้างการทำงานเพื่อนับจำนวนครั้งที่คลิกบนปุ่มด้วยวิธีการของ Reactive Programming
+  const output$ = Rx.Observable
+    .fromEvent(document.getElementById('counter'), 'click')
+    .mapTo(1)
+    .scan((result, item) => result += item, 0)
+    .startWith(0);
+
+  output$.subscribe(
+    (value) => document.getElementById('result').innerHTML = value,
+    (error) => console.log(error),
+    () => console.log('Complete')
+  );
+
+</script>
+</body>
+</html>
